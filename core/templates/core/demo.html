@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap Popup Form</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Button to trigger the modal -->
+    <div class="container mt-5">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#emailModal">
+            Open Form
+        </button>
+    </div>
+
+    <!-- Email Form Modal -->
+    <div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emailModalLabel">Send Email</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="emailForm">
+                        <div class="mb-3">
+                            <label for="emailInput" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="emailInput" placeholder="Enter email" required>
+                        </div>
+                        <div class="alert alert-success d-none" id="successMessage">Email sent successfully!</div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="sendEmail()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function sendEmail() {
+            let email = document.getElementById("emailInput").value;
+            let successMessage = document.getElementById("successMessage");
+
+            if (email === "") {
+                alert("Please enter an email.");
+                return;
+            }
+
+            // Simulate email sending
+            successMessage.classList.remove("d-none");
+
+            // Close modal after 1.5 seconds
+            setTimeout(() => {
+                let modal = bootstrap.Modal.getInstance(document.getElementById("emailModal"));
+                modal.hide();
+                successMessage.classList.add("d-none"); // Hide success message for next use
+                document.getElementById("emailForm").reset(); // Clear input field
+            }, 1500);
+        }
+    </script>
+
+</body>
+</html>

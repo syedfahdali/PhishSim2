@@ -1,0 +1,237 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <h1 class="mb-3">Campaigns</h1>
+    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#newCampaignModal">+ New Campaign</button>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#active">Active Campaigns</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#archived">Archived Campaigns</a>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3">
+  <!-- Active Campaigns -->
+        <div id="active" class="tab-pane fade show active">
+            <table class="table table-bordered">
+             <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Launch Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for campaign in active_campaigns %}
+                <tr>
+                    <td>{{ campaign.name }}</td>
+                    <td>{{ campaign.launch_date }}</td>
+                    <td>{{ campaign.status }}</td>
+                    <td>
+                        <a href="{% url 'edit_campaign' campaign.id %}" class="btn btn-sm btn-primary">Edit</a>
+                        <a href="{% url 'delete_campaign' campaign.id %}" class="btn btn-sm btn-danger">Delete</a>
+                        <a href="{% url 'archive_campaign' campaign.id %}" class="btn btn-sm btn-secondary">Archive</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+         </table>
+        </div>
+
+  <!-- Archived Campaigns -->
+        <div id="archived" class="tab-pane fade">
+         <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Launch Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for campaign in archived_campaigns %}
+             <tr>
+              <td>{{ campaign.name }}</td>
+              <td>{{ campaign.launch_date }}</td>
+              <td>{{ campaign.status }}</td>
+              <td>
+                <a href="{% url 'edit_campaign' campaign.id %}" class="btn btn-sm btn-primary">Edit</a>
+                <a href="{% url 'delete_campaign' campaign.id %}" class="btn btn-sm btn-danger">Delete</a>
+                <a href="{% url 'activate_campaign' campaign.id %}" class="btn btn-sm btn-success">Activate</a>
+              </td>
+             </tr>
+             {% endfor %}
+          </tbody>
+        </table>
+       </div>
+    </div>
+
+
+<!-- New Campaign Modal -->
+<div class="modal fade" id="newCampaignModal" tabindex="-1" role="dialog" aria-labelledby="campaignModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="campaignModalLabel">New Campaign</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" class="form" id="campaignForm">
+                    {% csrf_token %}
+
+                    <!-- Name Field -->
+                    <div class="form-group">
+                        <label for="name">Campaign Name:</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Campaign name" required autofocus>
+                    </div>
+
+                    <!-- URL Field -->
+                    <div class="form-group">
+                        <label for="url">Campaign URL:</label>
+                        <input type="url" class="form-control" id="url" name="url" placeholder="http://127.0.0.1" required>
+                    </div>
+
+                    <!-- Email Template Dropdown -->
+                    <div class="form-group">
+                        <label for="email_template">Email Template:</label>
+                        <select class="form-control" name="email_template" id="template" required>
+                            {% for template in email_templates %}
+                                <option value="{{ template.id }}" {% if template.id == form.email_template.value %}selected{% endif %}>
+                                    {{ template.name }}
+                                </option>
+                            {% empty %}
+                                <option value="" disabled>No email templates available</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <!-- Landing Page Dropdown -->
+                    <div class="form-group">
+                        <label for="landing_page">Landing Page:</label>
+                        <select class="form-control" name="landing_page" id="page" required>
+                            {% for page in landing_pages %}
+                                <option value="{{ page.id }}">{{ page.name }}</option>
+                            {% empty %}
+                                <option value="" disabled>No landing pages available</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Sending Profile Dropdown -->
+                    <div class="form-group">
+                        <label for="sending_profile">Sending Profile:</label>
+                        <select class="form-control" name="sending_profile" id="profile" required>
+                            {% for profile in sending_profiles %}
+                                <option value="{{ profile.id }}">{{ profile.name }}</option>
+                            {% empty %}
+                                <option value="" disabled>No sending profiles available</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Groups Dropdown (with multiple selection allowed) -->
+                    <div class="form-group">
+                        <label for="users">Groups:</label>
+                        <select class="form-control" name="groups" id="users" multiple="multiple" required>
+                            {% for group in groups %}
+                                <option value="{{ group.id }}">{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div id="selected-groups-container" class="mt-2">
+                            <!-- This will display the selected groups and allow deletion -->
+                        </div>
+                    </div>
+
+
+                    <!-- Launch Date Field -->
+                    <div class="form-group">
+                        <label for="launch_date">Launch Date:</label>
+                        <input type="datetime-local" class="form-control" id="launch_date" name="launch_date" required>
+                    </div>
+
+                    <!-- Send Emails By Field (Plain Text) -->
+                    <div class="form-group">
+                        <label for="send_emails_by">Send Emails By (Optional):</label>
+                        <input type="text" class="form-control" id="send_by_date" name="send_emails_by" placeholder="Optional - Enter manually if needed">
+                    </div>
+
+                    <!-- Launch Campaign Button -->
+                    <div class="form-group mt-5">
+                        <button type="Submit" class="btn btn-primary w-100">🚀 Launch Campaign</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Ensure modal closes correctly
+    $(document).ready(function() {
+        $('#newCampaignModal').on('hidden.bs.modal', function () {
+            // Optional: reset form or cleanup when modal closes
+            $('#campaignForm')[0].reset(); // Reset the form when closing modal
+        });
+    });
+</script>
+
+<script>
+    // Function to update the selected groups display
+    function updateSelectedGroups() {
+        const selectedGroups = document.getElementById('users').selectedOptions;
+        const container = document.getElementById('selected-groups-container');
+        container.innerHTML = ''; // Clear the previous list
+
+        for (let i = 0; i < selectedGroups.length; i++) {
+            const group = selectedGroups[i];
+            const groupId = group.value;
+            const groupName = group.innerText;
+
+            // Create a list item for the selected group with a delete button
+            const groupItem = document.createElement('div');
+            groupItem.classList.add('selected-group-item');
+            groupItem.innerHTML = `
+                <span>${groupName}</span>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeGroup('${groupId}')">Remove</button>
+            `;
+            container.appendChild(groupItem);
+        }
+
+        // If there's more than one group selected, show the delete button for each group
+        const groupsDropdown = document.getElementById('users');
+        if (groupsDropdown.selectedOptions.length > 1) {
+            container.style.display = 'block'; // Show the delete button container
+        } else {
+            container.style.display = 'none'; // Hide it when there's only one group
+        }
+    }
+
+    // Function to remove a selected group
+    function removeGroup(groupId) {
+        const groupsDropdown = document.getElementById('users');
+        const optionToRemove = Array.from(groupsDropdown.options).find(option => option.value === groupId);
+        if (optionToRemove) {
+            optionToRemove.selected = false;  // Deselect the group
+            updateSelectedGroups(); // Re-update the display
+        }
+    }
+
+    // Update selected groups when the user selects/deselects a group
+    document.getElementById('users').addEventListener('change', updateSelectedGroups);
+
+    // Initialize the selected groups display when the page is loaded
+    window.onload = updateSelectedGroups;
+</script>
+
+{% endblock %}

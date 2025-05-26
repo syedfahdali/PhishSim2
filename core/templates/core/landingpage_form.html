@@ -1,0 +1,219 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<!-- Modal -->
+<div class="modal fade" id="editLandingPageModal" tabindex="-1" aria-labelledby="editLandingPageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newEmailTemplateModalLabel">Edit Landing Page</h5>
+                <button type="button" class="close" data-bs-dismiss="modal">
+                    &times;
+                  </button>            
+                </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <!-- Form Fields -->
+                    <div class="mb-3">
+                        <label for="id_name" class="form-label" style="font-weight: bold; color: #555;">Name:</label>
+                        <input type="text" class="form-control" id="id_name" name="name" value="{{ form.instance.name }}" required>
+                    </div>
+
+                    <!-- Tabs for HTML Code and Preview -->
+                    <div class="mb-3">
+                        <ul class="nav nav-tabs" id="editTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="html-tab" data-bs-toggle="tab" data-bs-target="#htmlCodeTab" type="button" role="tab" aria-controls="htmlCodeTab" aria-selected="true">HTML Code</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#previewTab" type="button" role="tab" aria-controls="previewTab" aria-selected="false">Preview</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="editTabsContent">
+                            <!-- HTML Code Tab -->
+                            <div class="tab-pane fade show active" id="htmlCodeTab" role="tabpanel" aria-labelledby="html-tab">
+                                <div class="mb-3">
+                                    <textarea id="html_code" class="form-control" rows="10" name="html_content">{{ form.instance.html_content }}</textarea>
+                                </div>
+                            </div>
+
+                            <!-- Preview Tab -->
+                            <div class="tab-pane fade" id="previewTab" role="tabpanel" aria-labelledby="preview-tab">
+                                <iframe id="previewIframe" width="100%" height="500px" style="border: 1px solid #ccc;"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Buttons -->
+                    <div class="mt-4 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS for Styling -->
+<style>
+    .modal-content {
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* .modal-header {
+        border-bottom: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        padding: 15px 20px;
+    } */
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 5px;
+    }
+
+    .form-control {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 0.95rem;
+        color: #333;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+        outline: none;
+    }
+
+    /* Tab Styling to Match Email Content Tabs */
+    .nav-tabs {
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .nav-tabs .nav-item {
+        margin-bottom: -2px;
+    }
+
+    .nav-tabs .nav-link {
+        font-weight: 500;
+        color: #495057;
+        padding: 10px 20px;
+        border: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        background-color: transparent;
+        transition: all 0.3s ease;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: #007bff;
+        border-bottom: 2px solid #007bff;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #007bff;
+        border-bottom: 2px solid #007bff;
+        background-color: transparent;
+    }
+
+    .tab-content {
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        padding: 15px;
+        background-color: #fff;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        padding: 8px 20px;
+        font-weight: 500;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        padding: 8px 20px;
+        font-weight: 500;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #5a6268;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        padding: 8px 20px;
+        font-weight: 500;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #c82333;
+    }
+</style>
+
+<!-- JavaScript to Update Preview and Auto-Open Modal -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Function to update the preview
+        function updatePreview() {
+            const htmlContent = $('#html_code').val();
+            const iframe = document.getElementById('previewIframe');
+            if (htmlContent) {
+                iframe.srcdoc = htmlContent;
+            } else {
+                iframe.srcdoc = '';
+            }
+        }
+
+        // Update preview when HTML content changes
+        $('#html_code').on('input', function() {
+            updatePreview();
+        });
+
+        // Automatically show the modal when the page loads
+        $('#editLandingPageModal').modal('show');
+
+        // Initial preview update when modal is shown
+        $('#editLandingPageModal').on('shown.bs.modal', function () {
+            updatePreview();
+        });
+
+        // Redirect to landing pages list when modal is closed
+        $('#editLandingPageModal').on('hidden.bs.modal', function () {
+            window.location.href = '/landing-pages/';
+        });
+    });
+</script>
+{% endblock %}

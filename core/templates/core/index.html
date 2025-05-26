@@ -1,0 +1,98 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <h1 class="mb-4">
+        Results for 
+        {% if campaign %}{{ campaign.name }}{% else %}<em>No campaign selected</em>{% endif %}
+    </h1>
+
+    <form method="get" action="{% url 'campaign_results' %}" class="mb-3">
+        <label for="campaignSelect">Select Campaign:</label>
+        <select name="campaign_id" id="campaignSelect" class="form-select" onchange="this.form.submit()">
+            {% for c in active_campaigns %}
+                <option value="{{ c.id }}" {% if c.id == campaign.id %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    <div class="mb-3">
+        <a href="{% url 'campaign_list' %}" class="btn btn-secondary">Back</a>
+        
+     {% if campaign %}
+        <a href="{% url 'export_campaign_csv' campaign.id %}" class="btn btn-success">Export CSV</a>
+     {% else %}
+        <button class="btn btn-success" disabled>Export CSV</button>
+     {% endif %}
+
+        <a href="#" class="btn btn-danger">Complete</a>
+        <a href="{% url 'campaign_results' %}?campaign_id={{ campaign.id }}" class="btn btn-primary">Refresh</a>
+    </div>
+
+    <!-- Summary Cards Section -->
+    <div class="row text-center mb-5">
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Email Sent</h6>
+                    <h3>{{ results.total }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Email Opened</h6>
+                    <h3>{{ results.opens }}</h3>
+                    {% if external_stats.first_open_time and external_stats.last_open_time %}
+                        <small class="text-muted d-block mt-2">
+                            First: {{ external_stats.first_open_time|date:"Y-m-d h:i:s" }}<br>
+                            Last: {{ external_stats.last_open_time|date:"Y-m-d h:i:s" }}
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Clicked Link</h6>
+                    <h3>{{ results.clicks }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Submitted Data</h6>
+                    <h3>{{ results.submissions }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Lists Section -->
+    {% if recipients_clicked_link %}
+    <h5>Recipients Who Clicked the Link:</h5>
+    <ul>
+        {% for email in recipients_clicked_link %}
+        <li>{{ email }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No recipients clicked the link yet.</p>
+    {% endif %}
+
+    {% if recipients_submitted_data %}
+    <h5>Recipients Who Submitted Data:</h5>
+    <ul>
+        {% for email in recipients_submitted_data %}
+        <li>{{ email }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No recipients submitted data yet.</p>
+    {% endif %}
+    
+</div>
+{% endblock %}

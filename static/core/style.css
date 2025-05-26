@@ -1,0 +1,101 @@
+/* Enhanced Professional Dashboard Styling */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f4f6f8;
+    margin: 0;
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: #0a1b2e;
+    height: 100vh;
+    padding-top: 1rem;
+    color: white;
+}
+
+.sidebar .nav-link {
+    color: #dfe7f1;
+    font-weight: 500;
+    padding: 12px 18px;
+    border-radius: 6px;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: #1d3c6a;
+    color: #ffffff;
+}
+
+.sidebar .nav-item + .nav-item {
+    margin-top: 10px;
+}
+
+/* Topbar */
+.topbar {
+    background-color: #0a1b2e;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: white;
+}
+
+.topbar-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Main area */
+main {
+    background-color: #f5f7fa;
+    padding: 30px 20px;
+    min-height: 100vh;
+}
+
+.bg-white {
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+
+/* Cards, Tables, Modals */
+.card,
+.table,
+.modal-content {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: none;
+}
+
+.table th {
+    font-weight: 600;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #4a6cf7;
+    border: none;
+    font-weight: 500;
+}
+.btn-primary:hover {
+    background-color: #3a5ce5;
+}
+.btn-danger {
+    background-color: #f44336;
+    border: none;
+}
+.btn-danger:hover {
+    background-color: #d32f2f;
+}

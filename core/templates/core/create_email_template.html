@@ -1,0 +1,7 @@
+<h1>{{ form.instance.id|yesno:"Edit Email Template,Create Email Template" }}</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+<a href="{% url 'emailtemplate_list' %}">Back to Email Templates</a>

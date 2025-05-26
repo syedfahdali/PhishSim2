@@ -1,0 +1,16 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <h1 class="mb-3">{{ landing_page.name }}</h1>
+    
+    <!-- Render the HTML content of the landing page -->
+    <div class="landing-page-content">
+        <!-- Safe filter ensures HTML content is rendered as HTML -->
+        {{ landing_page.html_content|safe }}
+    </div>
+    
+    <!-- Optionally, add a back button to return to the list of landing pages -->
+    <a href="{% url 'landing_page_list' %}" class="btn btn-secondary mt-3">Back to Landing Pages</a>
+</div>
+{% endblock %}

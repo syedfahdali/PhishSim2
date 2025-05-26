@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h2 class="text-danger">Activation Failed</h2>
+    <p>The activation link is invalid or has expired.</p>
+    
+    {% if email %}
+    <p>If this was your email, you can request a new activation email below:</p>
+    <a href="{% url 'resend_activation' %}?email={{ email }}" class="btn btn-warning mt-3">
+        Resend Activation Email
+    </a>
+    {% else %}
+    <p>Please register again or contact support.</p>
+    {% endif %}
+</div>
+{% endblock %}

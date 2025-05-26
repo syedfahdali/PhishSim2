@@ -1,0 +1,221 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="container-fluid p-4">
+  <h1 class="mb-3">Users & Groups</h1>
+  <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#groupModal">
+    + New Group
+  </button>
+
+  <ul class="nav nav-tabs">
+    <li class="nav-item">
+      <a class="nav-link active" href="#active" data-toggle="tab">Active Groups</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#archived" data-toggle="tab">Archived Groups</a>
+    </li>
+  </ul>
+
+  <table class="table mt-3">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Email</th>
+        <th>Position</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for group in groups %}
+      <tr>
+        <td>{{ group.name }}</td>
+        <td>{{ group.first_name }}</td>
+        <td>{{ group.last_name }}</td>
+        <td>{{ group.email }}</td>
+        <td>{{ group.position }}</td>
+        <td>
+          <button
+            class="btn btn-primary btn-sm edit-group"
+            data-id="{{ group.pk }}"
+            data-name="{{ group.name }}"
+            data-first_name="{{ group.first_name }}"
+            data-last_name="{{ group.last_name }}"
+            data-email="{{ group.email }}"
+            data-position="{{ group.position }}"
+          >
+            Edit
+          </button>
+          <button
+            class="btn btn-danger btn-sm delete-group-btn"
+            data-id="{{ group.pk }}"
+            data-name="{{ group.name }}"
+            data-delete-url="{% url 'delete_group' group.pk %}"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteGroupModal"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Delete Group Modal -->
+<div class="modal fade" id="deleteGroupModal" tabindex="-1" aria-labelledby="deleteGroupModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteGroupModalLabel">Delete Group</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete "<span id="deleteGroupName"></span>"?</p>
+      </div>
+      <div class="modal-footer">
+        <form id="deleteGroupForm" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Yes, delete</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for adding/editing group -->
+<div class="modal fade" id="groupModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">New Group</h5>
+        <button type="button" class="close" data-bs-dismiss="modal">
+          &times;
+        </button>
+      </div>
+
+      <form
+        method="post"
+        action="{% url 'create_group' %}"
+        enctype="multipart/form-data"
+      >
+        {% csrf_token %}
+        <div class="modal-body">
+          <label>Name:</label>
+          <input type="text" name="name" class="form-control" required />
+
+          <label>First Name:</label>
+          <input type="text" name="first_name" class="form-control" required />
+
+          <label>Last Name:</label>
+          <input type="text" name="last_name" class="form-control" required />
+
+          <label>Email:</label>
+          <input type="email" name="email" class="form-control" required />
+
+          <label>Position:</label>
+          <input type="text" name="position" class="form-control" required />
+
+          <hr />
+          <label>Bulk Import Users (CSV):</label>
+          <input
+            type="file"
+            name="csv_file"
+            class="form-control"
+            accept=".csv"
+          />
+          <small class="text-muted"
+            >Upload a CSV file to add multiple users.</small
+          >
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".edit-group").forEach((button) => {
+      button.addEventListener("click", function () {
+        document.querySelector("#groupModal .modal-title").textContent =
+          "Edit Group";
+        document.querySelector(
+          "#groupModal form"
+        ).action = `/groups/update/${this.dataset.id}/`;
+        document.querySelector("#groupModal input[name='name']").value =
+          this.dataset.name;
+        document.querySelector("#groupModal input[name='first_name']").value =
+          this.dataset.first_name;
+        document.querySelector("#groupModal input[name='last_name']").value =
+          this.dataset.last_name;
+        document.querySelector("#groupModal input[name='email']").value =
+          this.dataset.email;
+        document.querySelector("#groupModal input[name='position']").value =
+          this.dataset.position;
+
+        // Clear CSV file input when editing
+        document.querySelector("#groupModal input[name='csv_file']").value = "";
+
+        new bootstrap.Modal(document.querySelector("#groupModal")).show();
+      });
+    });
+// Delete Group Handler
+document.querySelectorAll('.delete-group-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const groupName = this.dataset.name;
+        const deleteUrl = this.dataset.deleteUrl;
+        const form = document.getElementById('deleteGroupForm');
+
+        // Update modal content
+        document.getElementById('deleteGroupName').textContent = groupName;
+        form.action = deleteUrl;
+
+        // Handle form submission
+        form.onsubmit = function(event) {
+          event.preventDefault();
+          
+          fetch(deleteUrl, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+          .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              // alert('Group deleted successfully!');
+              location.reload();
+            } else {
+              alert('Error deleting group: ' + (data.error || 'Unknown error'));
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the group: ' + error.message);
+          })
+          .finally(() => {
+            bootstrap.Modal.getInstance(document.getElementById('deleteGroupModal')).hide();
+          });
+        };
+      });
+    });
+
+    // Reset delete modal on close
+    document.getElementById('deleteGroupModal').addEventListener('hidden.bs.modal', function() {
+      document.getElementById('deleteGroupName').textContent = '';
+      document.getElementById('deleteGroupForm').action = '';
+    });
+  });
+</script>
+{% endblock %}

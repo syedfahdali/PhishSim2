@@ -1,0 +1,138 @@
+/* Enhanced Professional Dashboard Styling */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f4f6f8;
+    margin: 0;
+}
+
+/* Sidebar */
+nav.bg-dark {
+    background-color: #1c1e26 !important; /* updated for better contrast */
+    color: #fff;
+    min-height: 100vh;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+nav .nav-link {
+    color: #d1d1d1;
+    font-weight: 500;
+    padding: 10px 15px;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+nav .nav-link:hover,
+nav .nav-link.active {
+    background-color: #333746;
+    color: #fff;
+    font-weight: 600;
+}
+
+nav .nav-item + .nav-item {
+    margin-top: 10px;
+}
+
+/* Header */
+.row.bg-dark {
+    background-color: #1c1e26 !important;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.row.bg-dark h1 {
+    margin-bottom: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.row.bg-dark img {
+    height: 45px;
+    margin-right: 10px;
+}
+
+/* Page container spacing */
+.container-fluid > .row {
+    margin: 0;
+}
+
+/* Content layout */
+main {
+    background-color: #f4f6f8;
+    padding: 20px 10px;
+    min-height: 100vh;
+}
+
+/* Card Style Enhancements */
+.card,
+.table,
+.modal-content {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: none;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #4a6cf7;
+    border: none;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #3a5ce5;
+}
+
+.btn-danger {
+    background-color: #f44336;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #d32f2f;
+}
+
+/* Table */
+.table th {
+    font-weight: 600;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+/* Remove excess spacing */
+main .container-fluid {
+    padding-top: 0;
+    margin-top: -10px;
+}
+
+
+/* Improved spacing for sections */
+h1, h2, h3 {
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #2e2e2e;
+}
+
+/* Sidebar icon spacing fix */
+nav .nav-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
+}
+.bg-white {
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+
+h1, h2 {
+    font-weight: 700;
+    color: #2a2a2a;
+}

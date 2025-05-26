@@ -1,0 +1,23 @@
+<!-- In result_list.html -->
+<table>
+    <thead>
+        <tr>
+            <th>Campaign</th>
+            <th>Recipient</th>
+            <th>Status</th>
+            <th>Link Clicked</th>
+            <th>Data Submitted</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+        <tr>
+            <td>{{ result.campaign.name }}</td>
+            <td>{{ result.recipient }}</td>
+            <td>{{ result.status }}</td>
+            <td>{{ result.link_clicked }}</td>
+            <td>{{ result.data_submitted }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

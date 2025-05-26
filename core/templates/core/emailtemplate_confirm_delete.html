@@ -1,0 +1,14 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <h1 class="mb-3">Delete Email Template</h1>
+    <p>Are you sure you want to delete "{{ emailtemplate.name }}"?</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, delete</button>
+        <a href="{% url 'emailtemplate_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

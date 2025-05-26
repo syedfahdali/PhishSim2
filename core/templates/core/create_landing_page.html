@@ -1,0 +1,7 @@
+<h1>{{ form.instance.id|yesno:"Edit Landing Page,Create Landing Page" }}</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save</button>
+</form>
+<a href="{% url 'landingpage_list' %}">Back to Landing Pages</a>
