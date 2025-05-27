@@ -18,7 +18,7 @@
 
     <div class="mb-3">
         <a href="{% url 'campaign_list' %}" class="btn btn-secondary">Back</a>
-        <a href="{% url 'campaign_results' %}?campaign_id={{ campaign.id }}" class="btn btn-primary">Refresh</a>
+        <a href="{% url 'campaign_results' %}?campaign_id={{ campaign.id }}" class="btn btn-primary" id="refreshBtn">Refresh</a>
     </div>
 
     <!-- Summary Cards Section -->
@@ -57,7 +57,8 @@
             <div class="card">
                 <div class="card-body">
                     <h6>Submitted Data</h6>
-                    <h3>{{ results.submissions }}</h3>
+                    <!-- Replace the "Submitted Data" block with the button -->
+                    <button class="btn btn-primary" id="fetchSubmittedDataBtn">Fetch Submitted Data</button>
                 </div>
             </div>
         </div>
@@ -85,50 +86,62 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Extract campaign_id and token_id from the URL query parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const campaignId = urlParams.get('campaign_id');
-        const tokenId = urlParams.get('token');
+        const fetchSubmittedDataBtn = document.getElementById("fetchSubmittedDataBtn");
+        const tableBody = document.querySelector("#data-table tbody");
+        const campaignSelect = document.getElementById("campaignSelect");  // Dropdown for selecting campaign
 
-        if (campaignId && tokenId) {
-            // Construct the URL to fetch data from your backend (replace with actual URL)
-            const dataUrl = `http://127.0.0.1:8000/user/${campaignId}/${tokenId}`;
-            
-            // Fetch data from your backend using the constructed URL
-            fetch(dataUrl)
-                .then(response => response.json())
-                .then(data => {
-                    const tableBody = document.querySelector("#data-table tbody");
+        // Fetch and display data when the button is clicked
+        fetchSubmittedDataBtn.addEventListener('click', function () {
+            let campaignId = new URLSearchParams(window.location.search).get('campaign_id'); // Get campaign_id from URL query parameter
 
-                    // Check if data is available
-                    if (data && data.email && data.password) {
-                        // Create table row dynamically
+            // If the campaign_id is not found in the URL, take it from the dropdown
+            if (!campaignId && campaignSelect) {
+                campaignId = campaignSelect.value;
+            }
+
+            if (campaignId) {  // Ensure campaignId is not null or undefined
+                // Construct the URL to fetch data from your backend
+                const dataUrl = `http://127.0.0.1:8003/user/${campaignId}`;
+                
+                // Fetch data from the backend
+                fetch(dataUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear any existing table rows before adding new data
+                        tableBody.innerHTML = '';
+
+                        // Check if data is available
+                        if (data.users && data.users.length > 0) {
+                            // Loop through each user and create table rows dynamically
+                            data.users.forEach(user => {
+                                const row = document.createElement("tr");
+                                row.innerHTML = `
+                                    <td>${user.campaign_id}</td>
+                                    <td>${user.token}</td>
+                                    <td>${user.email}</td>
+                                    <td>${user.password}</td>
+                                `;
+                                tableBody.appendChild(row);
+                            });
+                        } else {
+                            // If no data is available
+                            const row = document.createElement("tr");
+                            row.innerHTML = "<td colspan='4' class='text-center'>No records found for this campaign</td>";
+                            tableBody.appendChild(row);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching data:", error);
                         const row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${campaignId}</td>
-                            <td>${tokenId}</td>
-                            <td>${data.email}</td>
-                            <td>${data.password}</td>
-                        `;
+                        row.innerHTML = "<td colspan='4' class='text-center'>Error fetching data</td>";
                         tableBody.appendChild(row);
-                    } else {
-                        // If no data is available
-                        const row = document.createElement("tr");
-                        row.innerHTML = "<td colspan='4' class='text-center'>No data available</td>";
-                        tableBody.appendChild(row);
-                    }
-                })
-                .catch(error => {
-                    console.error("Error fetching data:", error);
-                    const tableBody = document.querySelector("#data-table tbody");
-                    const row = document.createElement("tr");
-                    row.innerHTML = "<td colspan='4' class='text-center'>Error fetching data</td>";
-                    tableBody.appendChild(row);
-                });
-        } else {
-            console.log("Missing campaign_id or token in the URL.");
-        }
+                    });
+            } else {
+                console.log("Missing campaign_id in the URL or dropdown.");
+            }
+        });
     });
 </script>
+
 
 {% endblock %}
