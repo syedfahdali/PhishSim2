@@ -3,12 +3,14 @@ from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth.models import User
 from django.conf import settings
-from bs4 import BeautifulSoup
-from urllib.parse import quote
 import uuid
-# ============================
-#      CAMPAIGN MODEL
-# ============================
+import os
+from django.utils.text import slugify
+
+
+# ============================ #
+#      CAMPAIGN MODEL           #
+# ============================ #
 class Campaign(models.Model):
     STATUS_CHOICES = [
         ('draft', 'Draft'),
@@ -27,7 +29,7 @@ class Campaign(models.Model):
     groups = models.ManyToManyField('Group', blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     fake_landing_page_url = models.CharField(max_length=255, blank=True, null=True)  # Store the fake URL
-    
+
     def send_emails(self):
         if self.launch_date and timezone.now() < self.launch_date:
             print(f"[SKIP] Too early for campaign '{self.name}'")
@@ -42,50 +44,45 @@ class Campaign(models.Model):
             return
 
         subject = self.email_template.subject
-        body = self.email_template.html_body or self.email_template.text_body
+        original_body = self.email_template.html_body or self.email_template.text_body
 
-        # Loop through all emails and send the email with fake landing page URL
         for email in group_emails:
             try:
-                # Get the selected landing page URL
-                landing_page_url = self.landing_page.url
+                # Determine the correct landing page link
+                if "facebook" in self.landing_page.name.lower():
+                    landing_url = "http://127.0.0.1:8003/"
+                elif "linkedin" in self.landing_page.name.lower():
+                    landing_url = "http://127.0.0.1:8003/linkedin"
+                else:
+                    fake_landing_page = FakeLandingPage.objects.filter(original_landing_page=self.landing_page).first()
+                    if not fake_landing_page:
+                        print(f"[ERROR] No fake landing page found for landing page: {self.landing_page.url}")
+                        continue
+                    landing_url = fake_landing_page.url
 
-                # Fetch the corresponding fake landing page linked to the original landing page
-                fake_landing_page = FakeLandingPage.objects.filter(original_landing_page=self.landing_page).first()
-
-                if not fake_landing_page:
-                    print(f"[ERROR] No fake landing page found for landing page: {landing_page_url}")
-                    continue  # Skip this email if no fake landing page is found for this original landing page
-
-                # Use the fake landing page URL (NO hardcoding of domain)
-                fake_landing_page_url = fake_landing_page.url
-
-                # Generate a unique token for tracking
+                # Add unique token to URL
                 unique_token = uuid.uuid4().hex
-                # Append the unique token correctly (single parameter)
-                fake_landing_page_url_with_token = f"{fake_landing_page_url}?rid={fake_landing_page.rid}&campaign_id={self.id}&token={unique_token}"
+                final_url = f"{landing_url}?campaign_id={self.id}&token={unique_token}"
 
-                # Store the fake landing page URL in the campaign model (optional: you can also store this for each email)
-                self.fake_landing_page_url = fake_landing_page_url_with_token
+                # Save the fake landing page URL
+                self.fake_landing_page_url = final_url
                 self.save()
 
-                print(f"[FAKE PAGE URL] Assigned fake URL: {fake_landing_page_url_with_token}")
+                # Wrap existing images in <a href="...">...</a>
+                modified_body = original_body.replace(
+                    "<img ",
+                    f'<a href="{final_url}"><img '
+                ).replace(
+                    "/>", "/></a>"
+                )
 
-                # Prepare the tracking URL for tracking and redirect (track_and_redirect view)
-                tracking_url = f"/track_and_redirect/{self.id}/{unique_token}/"  # Track and redirect view URL
-
-                # Prepare the email body with the injected fake URL for tracking
-                body_with_tracking = f'Click this link to track your activity: <a href="{tracking_url}">Track Your Click</a>'
-                body_with_fake_link = body_with_tracking + f"<br>Fake Landing Page: <a href='{fake_landing_page_url_with_token}'>Click Here</a>"
-
-                # Send the email with the fake landing page URL
                 msg = EmailMultiAlternatives(
-                    subject=self.email_template.subject,
+                    subject=subject,
                     body="This is an HTML email.",
                     from_email=self.sending_profile.smtp_user,
                     to=[email]
                 )
-                msg.attach_alternative(body_with_fake_link, "text/html")
+                msg.attach_alternative(modified_body, "text/html")
                 msg.send()
 
                 print(f"Creating Result for email: {email}, campaign_id: {self.id}, unique_token: {unique_token}")
@@ -105,13 +102,11 @@ class Campaign(models.Model):
                     timestamp=timezone.now()
                 )
 
-        # ✅ Mark campaign active
         if self.status != 'active':
             self.status = 'active'
             self.save(update_fields=['status'])
 
 
-            
 class FakeLandingPage(models.Model):
     url = models.URLField()
     html_content = models.TextField()
@@ -119,27 +114,34 @@ class FakeLandingPage(models.Model):
     rid = models.CharField(max_length=20, unique=True)  # Unique identifier for each fake page
     campaign = models.ForeignKey('Campaign', on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    
-    # Link to the original LandingPage from which the fake page was created
     original_landing_page = models.ForeignKey('LandingPage', on_delete=models.CASCADE, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.rid:
+            self.rid = uuid.uuid4().hex  # Generate a unique RID if it's not already set
+        super().save(*args, **kwargs)
+
+        file_name = f"{slugify(self.original_landing_page.name)}-fake-landing-page.html"
+        file_path = os.path.join(settings.BASE_DIR, 'fake_landing_pages', file_name)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        with open(file_path, 'w') as file:
+            file.write(self.html_content)
+
 
 class FakeLandingPageSubmission(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, null=True, blank=True)
     fake_landing_page = models.ForeignKey(FakeLandingPage, on_delete=models.CASCADE, related_name='fake_landing_page_submission')
-    user_email = models.EmailField()  # You may have other user-related fields
+    user_email = models.EmailField()
     user_name = models.CharField(max_length=100)
-    submitted_data = models.TextField()  # Form data submitted
+    submitted_data = models.TextField()
     submitted_at = models.DateTimeField(auto_now_add=True)
-    unique_token = models.CharField(max_length=64, blank=True, null=True)  # Add this line to store the token
+    unique_token = models.CharField(max_length=64, blank=True, null=True)
 
     def __str__(self):
         return f"Submission by {self.user_email} for campaign {self.campaign.id}"
 
 
-
-# ============================
-#     EMAIL TEMPLATE MODEL
-# ============================
 class EmailTemplate(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -153,19 +155,16 @@ class EmailTemplate(models.Model):
     def __str__(self):
         return self.name
 
-# ============================
-#         LANDING PAGE
-# ============================
+
 class LandingPage(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     url = models.URLField(unique=True, null=True, blank=True)
     html_content = models.TextField()
     created_at = models.DateTimeField(blank=True, null=True)
-    is_fake = models.BooleanField(default=False) 
-# ============================
-#         GROUP MODEL
-# ============================
+    is_fake = models.BooleanField(default=False)
+
+
 class Group(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
@@ -180,9 +179,7 @@ class Group(models.Model):
     def __str__(self):
         return self.name
 
-# ============================
-#    SENDING PROFILE MODEL
-# ============================
+
 class SendingProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, blank=True, null=True)
@@ -198,9 +195,7 @@ class SendingProfile(models.Model):
             self.created_at = timezone.now()
         super().save(*args, **kwargs)
 
-# ============================
-#         RESULT MODEL
-# ============================
+
 class Result(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, related_name='results')
     group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True, blank=True)
@@ -215,5 +210,6 @@ class Result(models.Model):
     )
     timestamp = models.DateTimeField(auto_now_add=True)
     token = models.CharField(max_length=255, unique=True, default=uuid.uuid4)
+
     def __str__(self):
         return f"{self.status} for {self.campaign.name} ({self.recipient})"

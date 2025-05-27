@@ -18,14 +18,6 @@
 
     <div class="mb-3">
         <a href="{% url 'campaign_list' %}" class="btn btn-secondary">Back</a>
-        
-     {% if campaign %}
-        <a href="{% url 'export_campaign_csv' campaign.id %}" class="btn btn-success">Export CSV</a>
-     {% else %}
-        <button class="btn btn-success" disabled>Export CSV</button>
-     {% endif %}
-
-        <a href="#" class="btn btn-danger">Complete</a>
         <a href="{% url 'campaign_results' %}?campaign_id={{ campaign.id }}" class="btn btn-primary">Refresh</a>
     </div>
 
@@ -70,29 +62,5 @@
             </div>
         </div>
     </div>
-
-    <!-- Detailed Lists Section -->
-    {% if recipients_clicked_link %}
-    <h5>Recipients Who Clicked the Link:</h5>
-    <ul>
-        {% for email in recipients_clicked_link %}
-        <li>{{ email }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No recipients clicked the link yet.</p>
-    {% endif %}
-
-    {% if recipients_submitted_data %}
-    <h5>Recipients Who Submitted Data:</h5>
-    <ul>
-        {% for email in recipients_submitted_data %}
-        <li>{{ email }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No recipients submitted data yet.</p>
-    {% endif %}
-    
 </div>
 {% endblock %}

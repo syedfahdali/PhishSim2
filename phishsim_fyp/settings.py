@@ -11,9 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os
 from decouple import config
-
+import os
 # SECRET_KEY = config('django-insecure-h^#0vkk+)=7n1&x*!#2&(=nn$ncz9tg#q&%#*q4^8w#s@50wvz')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
@@ -141,18 +140,15 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 STATIC_URL = '/static/'
 
-# Directory where Django will collect static files for production (used by `collectstatic`)
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# Directory where your app's static files live (in development)
 STATICFILES_DIRS = [
-    BASE_DIR / "static",  # Ensure this path points to your app's static directory
+    BASE_DIR / 'static',  # 👈 This must point to the folder containing /core/
 ]
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

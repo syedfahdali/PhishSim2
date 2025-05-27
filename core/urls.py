@@ -57,7 +57,7 @@ urlpatterns = [
     path('groups/create/', views.create_group, name='create_group'),
     path('groups/update/<int:pk>/', views.update_group, name='update_group'),
     path('groups/delete/<int:pk>/', views.delete_group, name='delete_group'),
-   
+
     #urls for login , logout and registration
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
