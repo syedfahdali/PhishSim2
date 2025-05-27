@@ -62,5 +62,73 @@
             </div>
         </div>
     </div>
+
+    <!-- Data Table Section (Dynamically populated) -->
+    <div id="data-table-section" class="mt-4">
+        <h3>Fetched Data</h3>
+        <table class="table table-bordered table-striped" id="data-table">
+            <thead>
+                <tr>
+                    <th>Campaign ID</th>
+                    <th>Token ID</th>
+                    <th>Email</th>
+                    <th>Password</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be populated here via AJAX -->
+            </tbody>
+        </table>
+    </div>
+
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Extract campaign_id and token_id from the URL query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const campaignId = urlParams.get('campaign_id');
+        const tokenId = urlParams.get('token');
+
+        if (campaignId && tokenId) {
+            // Construct the URL to fetch data from your backend (replace with actual URL)
+            const dataUrl = `http://127.0.0.1:8000/user/${campaignId}/${tokenId}`;
+            
+            // Fetch data from your backend using the constructed URL
+            fetch(dataUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector("#data-table tbody");
+
+                    // Check if data is available
+                    if (data && data.email && data.password) {
+                        // Create table row dynamically
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${campaignId}</td>
+                            <td>${tokenId}</td>
+                            <td>${data.email}</td>
+                            <td>${data.password}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    } else {
+                        // If no data is available
+                        const row = document.createElement("tr");
+                        row.innerHTML = "<td colspan='4' class='text-center'>No data available</td>";
+                        tableBody.appendChild(row);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                    const tableBody = document.querySelector("#data-table tbody");
+                    const row = document.createElement("tr");
+                    row.innerHTML = "<td colspan='4' class='text-center'>Error fetching data</td>";
+                    tableBody.appendChild(row);
+                });
+        } else {
+            console.log("Missing campaign_id or token in the URL.");
+        }
+    });
+</script>
+
 {% endblock %}
