@@ -28,8 +28,8 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 SITE_DOMAIN = 'http://127.0.0.1:8000'
-CSRF_TRUSTED_ORIGINS = []
-
+CSRF_TRUSTED_ORIGINS = ['https://phishsimfastapi.gentleplant-73120773.centralindia.azurecontainerapps.io/']
+CORS_ALLOW_ALL_ORIGINS = True
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 
