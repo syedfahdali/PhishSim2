@@ -68,13 +68,19 @@ class Campaign(models.Model):
                 self.fake_landing_page_url = final_url
                 self.save()
 
-                # Wrap existing images in <a href="...">...</a>
+                # Modify the email body to replace the existing <img> tags and <a> links with the new URL
                 modified_body = original_body.replace(
                     "<img ",
                     f'<a href="{final_url}"><img '
                 ).replace(
                     "/>", "/></a>"
                 )
+
+                # Replace any links already in the body with the final URL
+                # Here we look for any <a href="..."> link and replace it with the new final URL
+                modified_body = modified_body.replace(
+                    '<a href="http://example.com">', f'<a href="{final_url}">'
+                )  # Adjust this as needed for existing links
 
                 msg = EmailMultiAlternatives(
                     subject=subject,
@@ -105,7 +111,6 @@ class Campaign(models.Model):
         if self.status != 'active':
             self.status = 'active'
             self.save(update_fields=['status'])
-
 
 class FakeLandingPage(models.Model):
     url = models.URLField()

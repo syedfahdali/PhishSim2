@@ -1194,3 +1194,67 @@ def resend_activation_email(request):
         messages.error(request, 'No account found with this email.')
 
     return redirect('login')
+
+
+def get_campaign_results_api(request, campaign_id):
+    """
+    API endpoint to fetch email, token, and status for a given campaign.
+    Accessed by the 'Show Campaign Records' button.
+    """
+    if request.method == 'GET':
+        # Filter Result objects by the campaign ID
+        # Select only the fields needed for the display in the modal
+        results = Result.objects.filter(campaign__id=campaign_id).values('recipient', 'token', 'status')
+
+        # Convert the QuerySet to a list of dictionaries
+        results_list = list(results)
+
+        # Return as JSON response
+        return JsonResponse({'results': results_list})
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
+# NEW VIEW for fetching submitted data for the table
+def get_submitted_data_api(request, campaign_id):
+    """
+    API endpoint to fetch submitted data (email, password) for a given campaign.
+    Accessed by the 'Fetch Submitted Data' button.
+    """
+    if request.method == 'GET':
+        # Get submissions for the specified campaign
+        submissions = FakeLandingPageSubmission.objects.filter(campaign__id=campaign_id).values(
+            'campaign__id',
+            'unique_token',
+            'user_email',
+            'submitted_data' # This field likely holds the JSON with email/password
+        )
+
+        users_data = []
+        for sub in submissions:
+            email_from_data = sub['user_email'] # Default to the direct field if available
+            password_from_data = 'N/A'
+
+            # Try to parse 'submitted_data' if it's a JSON string
+            if sub['submitted_data']:
+                try:
+                    parsed_data = json.loads(sub['submitted_data'])
+                    if 'email' in parsed_data:
+                        email_from_data = parsed_data['email'] # Override if found in submitted_data
+                    if 'password' in parsed_data:
+                        password_from_data = parsed_data['password']
+                except (json.JSONDecodeError, TypeError):
+                    # If it's not valid JSON, treat submitted_data as a plain string for password
+                    # or handle as per your exact submission format
+                    password_from_data = sub['submitted_data'] # Fallback if not JSON, or adjust as needed
+
+            users_data.append({
+                'campaign_id': sub['campaign__id'],
+                'token': sub['unique_token'],
+                'email': email_from_data,
+                'password': password_from_data,
+            })
+
+        return JsonResponse({'users': users_data})
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)

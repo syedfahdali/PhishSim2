@@ -19,6 +19,7 @@
     <div class="mb-3">
         <a href="{% url 'campaign_list' %}" class="btn btn-secondary">Back</a>
         <a href="{% url 'campaign_results' %}?campaign_id={{ campaign.id }}" class="btn btn-primary" id="refreshBtn">Refresh</a>
+        <button class="btn btn-info" id="showCampaignResultsBtn">Show Campaign Records</button>
     </div>
 
     <!-- Summary Cards Section -->
@@ -49,7 +50,7 @@
             <div class="card">
                 <div class="card-body">
                     <h6>Clicked Link</h6>
-                    <h3>{{ results.clicks }}</h3>
+                    <h3 id="clickedCount">{{ results.clicks }}</h3>
                 </div>
             </div>
         </div>
@@ -57,7 +58,6 @@
             <div class="card">
                 <div class="card-body">
                     <h6>Submitted Data</h6>
-                    <!-- Replace the "Submitted Data" block with the button -->
                     <button class="btn btn-primary" id="fetchSubmittedDataBtn">Fetch Submitted Data</button>
                 </div>
             </div>
@@ -81,67 +81,138 @@
             </tbody>
         </table>
     </div>
+</div>
 
+<!-- Modal to show campaign records -->
+<div class="modal fade" id="campaignResultsModal" tabindex="-1" aria-labelledby="campaignResultsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="campaignResultsModalLabel">Campaign Records</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Token</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="campaignResultsBody">
+            <!-- Rows will be filled here via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const fetchSubmittedDataBtn = document.getElementById("fetchSubmittedDataBtn");
-        const tableBody = document.querySelector("#data-table tbody");
-        const campaignSelect = document.getElementById("campaignSelect");  // Dropdown for selecting campaign
+document.addEventListener("DOMContentLoaded", function () {
+    const fetchBtn = document.getElementById("fetchSubmittedDataBtn");
+    const showRecordsBtn = document.getElementById("showCampaignResultsBtn");
+    const tableBody = document.querySelector("#data-table tbody");
+    const clickedCountEl = document.getElementById("clickedCount");
+    const campaignSelect = document.getElementById("campaignSelect");
+    const resultsBody = document.getElementById("campaignResultsBody");
 
-        // Fetch and display data when the button is clicked
-        fetchSubmittedDataBtn.addEventListener('click', function () {
-            let campaignId = new URLSearchParams(window.location.search).get('campaign_id'); // Get campaign_id from URL query parameter
+    function getCampaignId() {
+        return new URLSearchParams(window.location.search).get('campaign_id') || campaignSelect.value;
+    }
 
-            // If the campaign_id is not found in the URL, take it from the dropdown
-            if (!campaignId && campaignSelect) {
-                campaignId = campaignSelect.value;
-            }
+    // Fetch submitted-data records and update table + clicked count
+    fetchBtn.addEventListener("click", () => {
+        const id = getCampaignId();
+        if (!id) return alert("Select a campaign first.");
 
-            if (campaignId) {  // Ensure campaignId is not null or undefined
-                // Construct the URL to fetch data from your backend
-                const dataUrl = `http://127.0.0.1:8003/user/${campaignId}`;
-                
-                // Fetch data from the backend
-                fetch(dataUrl)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Clear any existing table rows before adding new data
-                        tableBody.innerHTML = '';
+        fetch(`http://127.0.0.1:8003/user/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                tableBody.innerHTML = "";
+                const count = (data.users || []).length;
 
-                        // Check if data is available
-                        if (data.users && data.users.length > 0) {
-                            // Loop through each user and create table rows dynamically
-                            data.users.forEach(user => {
-                                const row = document.createElement("tr");
-                                row.innerHTML = `
-                                    <td>${user.campaign_id}</td>
-                                    <td>${user.token}</td>
-                                    <td>${user.email}</td>
-                                    <td>${user.password}</td>
-                                `;
-                                tableBody.appendChild(row);
-                            });
-                        } else {
-                            // If no data is available
-                            const row = document.createElement("tr");
-                            row.innerHTML = "<td colspan='4' class='text-center'>No records found for this campaign</td>";
-                            tableBody.appendChild(row);
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Error fetching data:", error);
+                if (count) {
+                    data.users.forEach(u => {
                         const row = document.createElement("tr");
-                        row.innerHTML = "<td colspan='4' class='text-center'>Error fetching data</td>";
+                        row.innerHTML = `
+                            <td>${u.campaign_id}</td>
+                            <td>${u.token}</td>
+                            <td>${u.email}</td>
+                            <td>${u.password}</td>
+                        `;
                         tableBody.appendChild(row);
                     });
-            } else {
-                console.log("Missing campaign_id in the URL or dropdown.");
-            }
-        });
+                } else {
+                    tableBody.innerHTML = "<tr><td colspan='4' class='text-center'>No records found for this campaign</td></tr>";
+                }
+
+                // **Set** clicked count to number of fetched records
+                clickedCountEl.innerText = count;
+            })
+            .catch(() => {
+                tableBody.innerHTML = "<tr><td colspan='4' class='text-center text-danger'>Error fetching data</td></tr>";
+            });
     });
+
+    // Show Results modal
+    showRecordsBtn.addEventListener("click", () => {
+    const id = getCampaignId();
+    if (!id) return alert("Select a campaign first.");
+
+    // MODIFIED LINE: Use a relative URL
+    // It will automatically target the same domain and port the page is loaded from (e.g., http://127.0.0.1:8000)
+    fetch(`/results/${id}/`) // Added a trailing slash consistent with Django URL patterns
+
+        .then(res => {
+            // Check if the response was successful (status 200-299)
+            if (!res.ok) {
+                // If not successful, try to read the error body and throw an error
+                return res.text().then(text => {
+                    console.error("Server responded with an error:", text); // Log the server's error message
+                    throw new Error(`HTTP error! status: ${res.status} - ${text}`);
+                });
+            }
+            // If successful, parse the JSON response
+            return res.json();
+        })
+        .then(data => {
+            resultsBody.innerHTML = "";
+            const list = data.results || []; // Ensure 'results' key exists, fallback to empty array
+
+            if (list.length) {
+                list.forEach(r => {
+                    const row = document.createElement("tr");
+                    // Assuming 'email', 'token', and 'status' are direct properties of each result object
+                    row.innerHTML = `
+                        <td>${r.recipient}</td> <td>${r.token}</td>
+                        <td>${r.status}</td>
+                    `;
+                    resultsBody.appendChild(row);
+                });
+            } else {
+                resultsBody.innerHTML = "<tr><td colspan='3' class='text-center'>No campaign records found for this campaign.</td></tr>";
+            }
+
+            // Show the modal after populating the data
+            new bootstrap.Modal(document.getElementById('campaignResultsModal')).show();
+        })
+        .catch(error => {
+            // Catch any errors during the fetch operation or JSON parsing
+            console.error("Error fetching campaign records:", error);
+            resultsBody.innerHTML = `<tr class="text-danger"><td colspan='3' class='text-center'>Error loading records: ${error.message || error}</td></tr>`;
+        });
+});
+    // Auto‐fetch submitted data when campaign dropdown changes
+    campaignSelect.addEventListener("change", () => {
+        fetchBtn.click();
+    });
+
+    // Initial load
+    if (campaignSelect.value) {
+        fetchBtn.click();
+    }
+});
 </script>
-
-
 {% endblock %}
