@@ -14,6 +14,9 @@ from pathlib import Path
 from decouple import config
 import os
 
+# SECRET_KEY = config('django-insecure-h^#0vkk+)=7n1&x*!#2&(=nn$ncz9tg#q&%#*q4^8w#s@50wvz')
+DEBUG = config('DEBUG', default=False, cast=bool)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,9 +26,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-h^#0vkk+)=7n1&x*!#2&(=nn$ncz9tg#q&%#*q4^8w#s@50wvz'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
-
+DEBUG = False
 ALLOWED_HOSTS = ['*']
 SITE_DOMAIN = 'http://127.0.0.1:8000'
 CSRF_TRUSTED_ORIGINS = ['https://phishsimfastapi.gentleplant-73120773.centralindia.azurecontainerapps.io/']
@@ -141,3 +142,32 @@ CELERY_TASK_SERIALIZER = 'json'
 CRONJOBS = [
     ('*/1 * * * *', 'core.management.commands.launch_due_campaigns.Command.handle')
 ]
+
+TIME_ZONE = 'Asia/Karachi'  # or your local time zone
+USE_TZ = True
+
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'WARNING',
+            'class': 'logging.StreamHandler',
+        },
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'error_log.txt',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
