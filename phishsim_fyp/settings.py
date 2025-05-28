@@ -14,35 +14,26 @@ from pathlib import Path
 from decouple import config
 import os
 
-
-# SECRET_KEY = config('django-insecure-h^#0vkk+)=7n1&x*!#2&(=nn$ncz9tg#q&%#*q4^8w#s@50wvz')
-DEBUG = config('DEBUG', default=False, cast=bool)
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(_file_).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-h^#0vkk+)=7n1&x*!#2&(=nn$ncz9tg#q&%#*q4^8w#s@50wvz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ['*']
 SITE_DOMAIN = 'http://127.0.0.1:8000'
-CSRF_TRUSTED_ORIGINS =[]
+CSRF_TRUSTED_ORIGINS = []
 
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -52,10 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_bootstrap5',
     'core',
-    'django_crontab',  # ✅ ADD THIS LINE
-    #'django_ckeditor_5'
+    'django_crontab',
+    # 'django_ckeditor_5'
 ]
-
 
 CKEDITOR_5_CONFIGS = {
     'default': {
@@ -78,7 +68,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.middleware.LoginRequiredMiddleware',  # Add this line
+    'core.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'phishsim_fyp.urls'
@@ -99,12 +89,7 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = 'phishsim_fyp.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
@@ -112,10 +97,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -132,35 +113,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Asia/Karachi'
 USE_I18N = True
-
 USE_TZ = True
 
-
-BASE_DIR = Path(_file_).resolve().parent.parent
-
 STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # 👈 This must point to the folder containing /core/
-]
-
+STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-# #Email Settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -168,23 +131,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'rwork0209@gmail.com'
 EMAIL_HOST_PASSWORD = 'qcbi qpex ohmi bumo'
 
-LOGIN_URL = '/login/'  # URL where users will be redirected if not logged in
-LOGIN_REDIRECT_URL = '/'  # Default landing page after login
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
 
-
-# settings.py
-
-CELERY_BROKER_URL = 'redis://localhost:6379/0'  # If you're using Redis as the broker
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
-import os
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 CRONJOBS = [
     ('*/1 * * * *', 'core.management.commands.launch_due_campaigns.Command.handle')
 ]
-
-TIME_ZONE = 'Asia/Karachi'  # or your local time zone
-USE_TZ = True
