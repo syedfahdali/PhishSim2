@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const id = getCampaignId();
         if (!id) return alert("Select a campaign first.");
 
-        fetch(`http://127.0.0.1:8003/user/${id}`)
+        fetch(`https://phishsim2.gentleplant-73120773.centralindia.azurecontainerapps.io/${id}`)
             .then(res => res.json())
             .then(data => {
                 tableBody.innerHTML = "";

@@ -50,9 +50,9 @@ class Campaign(models.Model):
             try:
                 # Determine the correct landing page link
                 if "facebook" in self.landing_page.name.lower():
-                    landing_url = "http://127.0.0.1:8003/"
+                    landing_url = "https://phishsim2.gentleplant-73120773.centralindia.azurecontainerapps.io/"
                 elif "linkedin" in self.landing_page.name.lower():
-                    landing_url = "http://127.0.0.1:8003/linkedin"
+                    landing_url = "https://phishsim2.gentleplant-73120773.centralindia.azurecontainerapps.io/linkedin"
                 else:
                     fake_landing_page = FakeLandingPage.objects.filter(original_landing_page=self.landing_page).first()
                     if not fake_landing_page:

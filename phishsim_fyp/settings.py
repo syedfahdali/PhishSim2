@@ -32,9 +32,11 @@ SECRET_KEY = 'django-insecure-h^#0vkk+)=7n1&x*!#2&(=nn$ncz9tg#q&%#*q4^8w#s@50wvz
 DEBUG = False
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['https://138f-39-32-122-13.ngrok-free.app']
 SITE_DOMAIN = 'http://127.0.0.1:8000'
+CSRF_TRUSTED_ORIGINS = ['https://phishsim2.gentleplant-73120773.centralindia.azurecontainerapps.io/']
 
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
 # Application definition
 
 INSTALLED_APPS = [
